@@ -64,7 +64,7 @@ void loop() {
     gameStarted = false;
 
     // Calculate the score
-    int score = elapsedTime / 100; // Divide by 100; 1 second = 10 points
+    int score = (elapsedTime / 10);
     if (score > highScore) {
       highScore = score;
     }
