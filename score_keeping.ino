@@ -2,11 +2,13 @@
 Copyright (c) 2024 Samuel Asebrook
 */
 
-#include <Wire.h> 
-#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-// Set the LCD address to 0x27 for a 16 chars and 2 line display
-LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 16, 2);
+// Define the OLED screen
+Adafruit_SSD1306 display(128, 64, &WIRE, -1);
 
 // Define the pin numbers for the sensors
 const int opticalSensorPin = A0; // 5V
@@ -28,6 +30,7 @@ bool state4_moved = false;
 
 int state_0, state_1, state_2, state_3, state_4 = 0; // Dummy variables strictly for local compilation purposes, REMOVE UPON GROUP COMPILATION
 
+/*
 void scrollText(int row, String message, int delayTime) {
   message = message + "           ";
 
@@ -38,14 +41,20 @@ void scrollText(int row, String message, int delayTime) {
     delay(delayTime);
   }
 }
+*/
 
 void setup() {
-  lcd.init(); 
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Hell Yeah!");
-  lcd.setCursor(0, 1);
-  lcd.print("Pinball!");
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.display();
+  delay(2000);
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.println("Hell Yeah!");
+  display.setCursor(0,16);
+  display.println("Pinball!");
+  display.display();
 
   pinMode(opticalSensorPin, INPUT);
   pinMode(limitSwitchPin, INPUT_PULLUP);
@@ -60,11 +69,15 @@ void loop() {
     startTime = millis();
     gameStarted = true;
 
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Good Luck!");
-    lcd.setCursor(0, 1);
-    lcd.print("You Need It!");
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println("Good Luck!");
+    display.setCursor(0,16);
+    display.println("You Will Need It!");
+    display.display();
+    delay(1000);
   }
 
   if ((state_1 == 1 && state1_moved == false) || (state_2 == 1 && state2_moved == false) || (state_3 == 1 && state3_moved == false) || (state_4 == 1 && state4_moved == false) ) {
@@ -144,22 +157,20 @@ void loop() {
       highScore = score;
     }
 
-    // Display the score on the LCD
-    lcd.clear();
+    // Display the score on the OLED
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    
+    display.setCursor(0,0);
+    display.print("Score: ");
+    display.println(score);
+    
+    display.setCursor(0,16);
+    display.print("High: ");
+    display.println(highScore);
 
-    if (String(score).length() >= 10) {
-      scrollText(0, " Score: " + String(score), 500);
-    }
-    lcd.setCursor(0, 0);
-    lcd.print("Score: ");
-    lcd.print(score);
-
-    if (String(highScore).length() >= 11) {
-      scrollText(1, " High: " + String(highScore), 500);
-    }
-    lcd.setCursor(0, 1);
-    lcd.print("High: ");
-    lcd.print(highScore);
+    display.display();
 
     // Reset game score and score multiplier at end of game
     score = 0;
